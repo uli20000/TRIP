@@ -1,0 +1,2 @@
+[functions.notion-sync]
+verify_jwt = true
