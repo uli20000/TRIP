@@ -1,7 +1,7 @@
 // Supabase Edge Function: HTML <-> Notion sync bridge.
 // Notion is the source of truth. The browser never receives NOTION_TOKEN.
 
-type Kind = 'travel' | 'expenses' | 'research'
+type Kind = 'travel' | 'expenses'
 
 type SchemaProperty = {
   id?: string
@@ -24,12 +24,6 @@ const SOURCES: Record<Kind, string | undefined> = {
 }
 const ORIGIN = Deno.env.get('WEB_ORIGIN') || '*'
 const schemaCache = new Map<string, { expires: number; properties: SchemaProperty[] }>()
-
-type ResearchResult = {
-  title: string
-  url: string
-  description?: string
-}
 
 function headers() {
   const token = Deno.env.get('NOTION_TOKEN')
@@ -144,40 +138,6 @@ async function queryPages(dataSourceId: string) {
   return pages
 }
 
-async function researchPlace(name: string, mapUrl = '') {
-  const key = Deno.env.get('BRAVE_SEARCH_API_KEY')
-  if (!key) {
-    throw new Error('尚未設定 BRAVE_SEARCH_API_KEY；請先在 Supabase Secrets 加入網路搜尋金鑰')
-  }
-  if (!name.trim()) throw new Error('請輸入景點名稱')
-
-  const query = `${name.trim()} official website opening hours address tickets`
-  const response = await fetch(`https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(query)}&count=8`, {
-    headers: {
-      Accept: 'application/json',
-      'X-Subscription-Token': key,
-    },
-  })
-  const body = await response.json().catch(() => ({}))
-  if (!response.ok) {
-    throw new Error(body?.message || `網路搜尋失敗（${response.status}）`)
-  }
-  const results: ResearchResult[] = (body.web?.results || []).map((item: any) => ({
-    title: String(item.title || ''),
-    url: String(item.url || ''),
-    description: String(item.description || ''),
-  })).filter((item: ResearchResult) => item.title && item.url)
-
-  return {
-    name: name.trim(),
-    mapUrl: mapUrl.trim(),
-    searchedAt: new Date().toISOString(),
-    query,
-    sources: results,
-    note: '搜尋結果只作為資料來源清單；建立前仍須確認官方網站、官方售票頁或官方公告，未知內容會標示為待確認。',
-  }
-}
-
 async function pageMarkdown(pageId: string) {
   const body = await notion(`/pages/${pageId}/markdown`)
   return body.page_markdown?.markdown || body.page_markdown?.content || ''
@@ -264,12 +224,7 @@ Deno.serve(async (request) => {
     const url = new URL(request.url)
     if (request.method === 'GET' && url.pathname.endsWith('/health')) return json({ ok: true, service: 'notion-sync' })
     const kind = (url.searchParams.get('kind') || 'travel') as Kind
-    if (kind === 'research') {
-      if (request.method !== 'GET') return json({ error: 'research only supports GET' }, 405)
-      const result = await researchPlace(url.searchParams.get('name') || '', url.searchParams.get('map') || '')
-      return json({ ok: true, kind, result })
-    }
-    if (!['travel', 'expenses'].includes(kind)) return json({ error: 'kind must be travel, expenses, or research' }, 400)
+    if (!['travel', 'expenses'].includes(kind)) return json({ error: 'kind must be travel or expenses' }, 400)
     const dataSourceId = sourceId(kind)
     const schema = await dataSourceSchema(dataSourceId)
 
