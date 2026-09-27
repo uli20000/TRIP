@@ -15,11 +15,13 @@ This project uses **Notion as the source of truth**. The Edge Function keeps the
 4. Set the function secrets from `.env.example` in Supabase. Never put `NOTION_TOKEN` in the HTML.
 5. Deploy the function as `notion-sync`.
 6. Configure the HTML with the deployed function URL and call it with a Supabase Auth session.
+7. For web-based place research, add a Supabase secret named `BRAVE_SEARCH_API_KEY`. The browser only receives search-result links; the key stays inside the Edge Function.
 
 ## API
 
 - `GET /functions/v1/notion-sync?kind=travel`
 - `GET /functions/v1/notion-sync?kind=expenses&content=false`
+- `GET /functions/v1/notion-sync?kind=research&name=...&map=...`
 - `POST /functions/v1/notion-sync?kind=expenses`
 - `PATCH /functions/v1/notion-sync?kind=expenses`
 - `DELETE /functions/v1/notion-sync?kind=expenses`
@@ -31,10 +33,10 @@ POST/PATCH body example:
   "properties": {
     "Name": "婚禮攝影",
     "類別": "婚禮",
-    "狀態": "預估",
     "原幣別": "ISK",
     "原始金額": 0,
     "台幣估算": 0,
+    "付款方式": "刷卡",
     "備註": "待報價"
   },
   "content": "## 備註\n\n待確認。"
