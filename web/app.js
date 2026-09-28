@@ -139,7 +139,7 @@ function iconMarkup(record) {
 }
 
 function spotCard(r, showDate = true) {
-  return `<article class="card spot-card" data-spot-card data-spot-id="${esc(r.id)}"><div class="spot-summary"><h3>${iconMarkup(r)}${esc(p(r, "Name") || "未命名景點")}</h3><span class="tag">${esc(p(r, "標籤") || "未分類")}</span><a class="spot-map" href="${esc(mapUrl(r))}" target="_blank" rel="noreferrer" onclick="event.stopPropagation()">地圖</a></div></article>`;
+  return `<article class="card spot-card" data-spot-card data-spot-id="${esc(r.id)}"><div class="spot-summary"><h3>${iconMarkup(r)}${esc(p(r, "Name") || "未命名景點")}</h3><div class="spot-actions"><span class="tag">${esc(p(r, "標籤") || "未分類")}</span><a class="spot-map" href="${esc(mapUrl(r))}" target="_blank" rel="noreferrer" onclick="event.stopPropagation()">地圖</a></div></div></article>`;
 }
 
 function inlineMarkup(value) {
@@ -178,8 +178,7 @@ function openSpotModal(id) {
   if (!r) return;
   $("spotModalTitle").innerHTML =
     `${iconMarkup(r)}${esc(p(r, "Name") || "景點說明")}`;
-  $("spotModalMeta").textContent =
-    `${p(r, "標籤") || "未分類"}${dateOf(r) ? ` · ${dayOf(r)} ${timeLabel(dateOf(r))}` : ""}`;
+  $("spotModalMeta").textContent = p(r, "標籤") || "未分類";
   $("spotModalBody").innerHTML = markdownToHtml(r.content);
   const link = $("spotModalMap");
   link.href = mapUrl(r);
@@ -278,7 +277,7 @@ function calendarHtml(rows, unscheduled = []) {
       const duration = Math.max(45, (end === null ? start + 60 : end) - start);
       const top = Math.max(0, start);
       const height = Math.min(1420 - top, Math.max(46, duration));
-      return `<article class="calendar-event" draggable="true" data-record-id="${esc(r.id)}" style="top:${top}px;height:${height}px" title="拖曳到其他時間格"><strong>${esc(p(r, "Name") || "未命名景點")}</strong><small>${esc(timeLabel(dateOf(r)))} · ${esc(p(r, "地點")?.name || p(r, "地點")?.address || "未填地點")}</small></article>`;
+      return `<article class="calendar-event" draggable="true" data-record-id="${esc(r.id)}" data-start-minute="${start}" data-end-minute="${Math.min(1439, start + duration)}" style="top:${top}px;height:${height}px" title="拖曳移動；拖曳底部調整結束時間"><strong>${esc(p(r, "Name") || "未命名景點")}</strong><small>${esc(timeLabel(dateOf(r)))} · ${esc(p(r, "地點")?.name || p(r, "地點")?.address || "未填地點")}</small><span class="calendar-resize-handle" aria-label="調整結束時間"></span></article>`;
     })
     .join("");
   const loose = unscheduled
@@ -289,14 +288,27 @@ function calendarHtml(rows, unscheduled = []) {
     .join("");
   return `${loose ? `<div class="unscheduled"><strong>尚未排入時間</strong><div class="small muted">把下面的景點拖到時間格，就會更新 Notion。</div><div>${loose}</div></div>` : ""}<div class="calendar-body"><div class="calendar-times">${times}</div><div class="calendar-board">${slots}${events}</div></div>`;
 }
+function snapMinutes(value) {
+  return Math.max(0, Math.min(1439, Math.round(value / 15) * 15));
+}
+
+function minutesFromPointer(event, board) {
+  const rect = board.getBoundingClientRect();
+  return snapMinutes(event.clientY - rect.top);
+}
+
 function bindCalendar(target, editable = true) {
   if (!editable) return;
+  const board = target.querySelector(".calendar-board");
+
   target.querySelectorAll('.calendar-event[draggable="true"]').forEach((card) =>
     card.addEventListener("dragstart", (e) => {
+      if (e.target.closest(".calendar-resize-handle")) return;
       e.dataTransfer.setData("text/plain", card.dataset.recordId);
       e.dataTransfer.effectAllowed = "move";
     }),
   );
+
   target.querySelectorAll(".calendar-slot").forEach((slot) => {
     slot.addEventListener("dragover", (e) => {
       e.preventDefault();
@@ -305,7 +317,52 @@ function bindCalendar(target, editable = true) {
     slot.addEventListener("drop", async (e) => {
       e.preventDefault();
       const id = e.dataTransfer.getData("text/plain");
-      if (id) await moveEvent(id, slot.dataset.time);
+      if (id) await moveEvent(id, minutesFromPointer(e, board));
+    });
+  });
+
+  board?.addEventListener("dragover", (e) => e.preventDefault());
+  board?.addEventListener("drop", async (e) => {
+    if (e.target.closest(".calendar-event")) return;
+    e.preventDefault();
+    const id = e.dataTransfer.getData("text/plain");
+    if (id) await moveEvent(id, minutesFromPointer(e, board));
+  });
+
+  target.querySelectorAll(".calendar-resize-handle").forEach((handle) => {
+    handle.addEventListener("pointerdown", (startEvent) => {
+      startEvent.preventDefault();
+      startEvent.stopPropagation();
+      const card = handle.closest(".calendar-event");
+      const id = card?.dataset.recordId;
+      if (!card || !id || !board) return;
+      handle.setPointerCapture?.(startEvent.pointerId);
+
+      const onMove = (moveEvent) => {
+        const start = Number(card.dataset.startMinute || 0);
+        const end = Math.max(start + 45, minutesFromPointer(moveEvent, board));
+        card.style.height = `${Math.max(46, end - start)}px`;
+        card.dataset.previewEndMinute = String(end);
+      };
+      const onUp = async (endEvent) => {
+        handle.releasePointerCapture?.(endEvent.pointerId);
+        handle.removeEventListener("pointermove", onMove);
+        handle.removeEventListener("pointerup", onUp);
+        const start = Number(card.dataset.startMinute || 0);
+        const end = Math.max(
+          start + 45,
+          Number(
+            card.dataset.previewEndMinute ||
+              card.dataset.endMinute ||
+              start + 60,
+          ),
+        );
+        delete card.dataset.previewEndMinute;
+        await resizeEvent(id, end);
+      };
+
+      handle.addEventListener("pointermove", onMove);
+      handle.addEventListener("pointerup", onUp);
     });
   });
 }
@@ -375,11 +432,45 @@ async function loadWeather(rows, filter, boxId = "weather") {
     ).then((r) => r.json());
     if (f.error || !f.daily?.time?.length)
       throw Error("這個日期太遠，Open-Meteo 目前沒有預報資料");
-    box.innerHTML = `<strong>${esc(date)} 天氣</strong> · ${esc(hit.name || place)}<br>最高 ${esc(f.daily.temperature_2m_max?.[0])}°C／最低 ${esc(f.daily.temperature_2m_min?.[0])}°C · 降雨機率 ${esc(f.daily.precipitation_probability_max?.[0])}% · 最大風速 ${esc(f.daily.windspeed_10m_max?.[0])} km/h<br><span class="small">資料來源：Open-Meteo；遠期日期可能沒有預報，出發前請再次確認。</span>`;
+    const max = Number(f.daily.temperature_2m_max?.[0]);
+    const min = Number(f.daily.temperature_2m_min?.[0]);
+    const rain = Number(f.daily.precipitation_probability_max?.[0]);
+    const wind = Number(f.daily.windspeed_10m_max?.[0]);
+    const outfit = wind >= 30 || rain >= 45 ? "防風防水外套、保暖中層、防滑鞋" : min <= 3 ? "保暖外套、帽子手套、防滑鞋" : "洋蔥式穿搭，備一件防風外套";
+    box.innerHTML = `<strong>${esc(date)} 天氣</strong> · ${esc(hit.name || place)}<br>最高 ${esc(max)}°C／最低 ${esc(min)}°C · 降雨機率 ${esc(rain)}% · 最大風速 ${esc(wind)} km/h<br><strong>穿搭建議：</strong>${esc(outfit)}<br><span class="small">資料來源：Open-Meteo；遠期日期可能沒有預報，出發前請再次確認。</span>`;
   } catch (e) {
     box.textContent = `${date} 的天氣目前無法取得：${e.message}`;
   }
 }
+async function resizeEvent(id, targetEndMinutes) {
+  const record = travel.find((item) => item.id === id);
+  if (!record) return;
+  const day = dayOf(record);
+  const start = timeMinutes(dateOf(record));
+  if (!day || start === null) return;
+
+  const end = Math.max(
+    start + 45,
+    Math.min(1439, snapMinutes(targetEndMinutes)),
+  );
+  try {
+    status("正在更新行程時間…");
+    await api("travel", "PATCH", {
+      id,
+      properties: {
+        Time: {
+          start: notionStamp(day, start),
+          end: notionStamp(day, end),
+        },
+      },
+    });
+    await syncTravel();
+    status("行程時間已更新到 Notion");
+  } catch (error) {
+    status(error.message, true);
+  }
+}
+
 async function moveEvent(id, targetMinutes) {
   const r = travel.find((x) => x.id === id);
   const day = $("dateFilter").value || dayOf(r);
@@ -686,5 +777,5 @@ $("closeSpotModal").onclick = closeSpotModal;
 $("spotModal").onclick = (e) => {
   if (e.target.id === "spotModal") closeSpotModal();
 };
-showPage("spots");
+showPage("overview");
 syncAll();
