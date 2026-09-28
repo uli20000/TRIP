@@ -140,7 +140,7 @@ async function queryPages(dataSourceId: string) {
 
 async function pageMarkdown(pageId: string) {
   const body = await notion(`/pages/${pageId}/markdown`)
-  return body.page_markdown?.markdown || body.page_markdown?.content || ''
+  return body.markdown || body.page_markdown?.markdown || body.page_markdown?.content || ''
 }
 
 async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>) {
