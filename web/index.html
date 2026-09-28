@@ -11,10 +11,11 @@
       <div id="appPanel">
         <div class="panel hero-panel">
           <div class="hero-kicker">
-            <span class="hero-flag">🇮🇸</span> ICELAND · WEDDING TRIP · 10 DAYS
+            <span class="hero-flag">🇮🇸</span> Iceland · Journey · 10 Days
           </div>
-          <h1>冰島｜旅行工作台</h1>
+          <h1>冰島 · 旅程</h1>
           <div class="hero-route">REYKJAVÍK · SOUTH COAST · AURORA</div>
+          <div class="hero-tags"><span>🧊 Glacier</span><span>✦ Aurora</span><span>🐎 Icelandic Horse</span></div>
           <div
             id="status"
             class="status"
@@ -42,12 +43,12 @@
           <div class="panel">
             <h2>總覽</h2>
             <button id="addExpenseJump" class="btn soft-action" type="button">
-              記帳
+              ＋快速記帳
             </button>
             <div id="overviewGrid" class="overview-grid"></div>
           </div>
         </section>
-        <section id="spots" class="section active">
+        <section id="spots" class="section">
           <div class="panel">
             <div class="row space">
               <div>
@@ -318,11 +319,11 @@
           </div>
         </section>
         <nav id="bottomNav" class="bottom-nav">
-          <button data-main-tab="overview">總覽</button
-          ><button data-main-tab="spots" class="active">景點小卡</button
+          <button data-main-tab="overview" class="active">總覽</button
+          ><button data-main-tab="spots">景點</button
           ><button data-main-tab="schedule">行程</button
           ><button data-main-tab="expenses">記帳</button
-          ><button data-main-tab="links">備用連結</button>
+          ><button data-main-tab="links">連結</button>
         </nav>
         <div
           id="spotModal"
@@ -332,24 +333,23 @@
           aria-labelledby="spotModalTitle"
         >
           <div class="modal-card">
-            <div class="row space">
-              <div>
-                <h2 id="spotModalTitle">景點說明</h2>
-                <div id="spotModalMeta" class="muted"></div>
-              </div>
+            <div class="modal-header">
+              <h2 id="spotModalTitle">景點說明</h2>
               <button id="closeSpotModal" class="btn gray" type="button">
                 關閉
               </button>
             </div>
-            <a
-              id="spotModalMap"
-              class="btn"
-              href="#"
-              target="_blank"
-              rel="noreferrer"
-              style="display: inline-block; margin-top: 12px"
-              >地圖</a
-            >
+            <div class="modal-actions">
+              <div id="spotModalMeta" class="tag"></div>
+              <a
+                id="spotModalMap"
+                class="spot-map"
+                href="#"
+                target="_blank"
+                rel="noreferrer"
+                >地圖</a
+              >
+            </div>
             <div id="spotModalBody" class="modal-content"></div>
           </div>
         </div>
