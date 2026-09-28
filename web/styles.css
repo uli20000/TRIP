@@ -747,3 +747,123 @@ h2 {
     padding: 18px;
   }
 }
+
+/* ===== Iceland identity ===== */
+.hero-panel {
+  overflow: hidden;
+  color: #f8fbfb;
+  background:
+    radial-gradient(ellipse at 80% 8%, #b5d6cc88 0 14%, transparent 37%),
+    radial-gradient(ellipse at 18% 100%, #6ea4a888 0 12%, transparent 42%),
+    linear-gradient(135deg, #193b4c 0%, #285968 48%, #4e8990 100%);
+  box-shadow: 0 16px 34px #193b4c25;
+}
+.hero-panel::after {
+  position: absolute;
+  inset: auto -10% -72px 30%;
+  height: 150px;
+  border-radius: 50% 50% 0 0;
+  background: #102d3c44;
+  content: "";
+  transform: rotate(-4deg);
+}
+.hero-kicker,
+.hero-route {
+  position: relative;
+  z-index: 1;
+  color: #d9ece9;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+.hero-kicker {
+  margin-bottom: 12px;
+}
+.hero-flag {
+  margin-right: 4px;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+.hero-panel h1 {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(25px, 4vw, 38px);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.hero-route {
+  margin-top: 10px;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+}
+.hero-panel .status {
+  z-index: 2;
+  background: #eaf5f299;
+  color: #fff;
+}
+.hero-panel .status.ready {
+  background: #7db99b;
+}
+.hero-panel .status.error {
+  background: #d97b70;
+}
+.spot-summary h3 {
+  max-width: 100%;
+  overflow: hidden;
+  margin: 0 auto 10px;
+  font-size: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.spot-map {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #edf5f3;
+  color: var(--blue-dark);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.expense-filters {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  overflow-x: auto;
+  padding: 2px 2px 7px;
+}
+.filter-button {
+  flex: 0 0 auto;
+  min-width: 56px;
+  white-space: nowrap;
+}
+@media (max-width: 750px) {
+  .hero-panel h1 {
+    font-size: 25px;
+  }
+  .hero-route {
+    letter-spacing: 0.12em;
+  }
+  .expense-filters {
+    justify-content: flex-start;
+  }
+}
+
+#appPanel > .panel.hero-panel {
+  background:
+    radial-gradient(ellipse at 80% 8%, #b5d6cc88 0 14%, transparent 37%),
+    radial-gradient(ellipse at 18% 100%, #6ea4a888 0 12%, transparent 42%),
+    linear-gradient(135deg, #193b4c 0%, #285968 48%, #4e8990 100%);
+}
+#appPanel > .panel.hero-panel::after {
+  background: #102d3c44;
+}
+#appPanel > .panel.hero-panel::after {
+  right: 0;
+}
+#appPanel > .panel.hero-panel::after {
+  display: none;
+}

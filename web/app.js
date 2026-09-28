@@ -139,7 +139,7 @@ function iconMarkup(record) {
 }
 
 function spotCard(r, showDate = true) {
-  return `<article class="card spot-card" data-spot-card data-spot-id="${esc(r.id)}"><div class="spot-summary"><h3>${iconMarkup(r)}${esc(p(r, "Name") || "未命名景點")}</h3><span class="tag">${esc(p(r, "標籤") || "未分類")}</span><a class="spot-map" href="${esc(mapUrl(r))}" target="_blank" rel="noreferrer" onclick="event.stopPropagation()">開啟地標導航</a></div></article>`;
+  return `<article class="card spot-card" data-spot-card data-spot-id="${esc(r.id)}"><div class="spot-summary"><h3>${iconMarkup(r)}${esc(p(r, "Name") || "未命名景點")}</h3><span class="tag">${esc(p(r, "標籤") || "未分類")}</span><a class="spot-map" href="${esc(mapUrl(r))}" target="_blank" rel="noreferrer" onclick="event.stopPropagation()">地圖</a></div></article>`;
 }
 
 function inlineMarkup(value) {
@@ -424,8 +424,8 @@ function expenseRowsForFilter() {
 function expenseFilterButtons() {
   const first = firstTravelDate();
   const buttons = [
-    { id: "all", label: "全部日期" },
-    { id: "before", label: "2027/11 前" },
+    { id: "all", label: "ALL", aria: "全部日期" },
+    { id: "before", label: "行前", aria: "2027/11 月前" },
     ...Array.from({ length: 10 }, (_, index) => ({
       id: `day-${index + 1}`,
       label: `D${index + 1}`,
@@ -436,7 +436,7 @@ function expenseFilterButtons() {
   $("expenseDateFilters").innerHTML = buttons
     .map(
       (button) =>
-        `<button class="filter-button ${activeExpenseDateFilter === button.id ? "active" : ""}" type="button" data-expense-filter="${button.id}">${button.label}${button.date ? `<small>${button.date}</small>` : ""}</button>`,
+        `<button class="filter-button ${activeExpenseDateFilter === button.id ? "active" : ""}" type="button" data-expense-filter="${button.id}" aria-label="${button.aria || button.label}" title="${button.aria || button.label}">${button.label}</button>`,
     )
     .join("");
 }
@@ -619,6 +619,11 @@ function showPage(id) {
   if (page) page.classList.add("active");
   const itinerary = id === "schedule" || id.startsWith("day");
   $("itineraryNav").classList.toggle("hidden", !itinerary);
+  document
+    .querySelectorAll("[data-itinerary-tab]")
+    .forEach((button) =>
+      button.classList.toggle("active", button.dataset.itineraryTab === id),
+    );
   const main = id.startsWith("day") ? "schedule" : id;
   document
     .querySelectorAll("[data-main-tab]")
