@@ -13,13 +13,16 @@
           <div class="row space">
             <div>
               <h1>冰島｜旅行工作台</h1>
-              <div class="muted">
-                重新整理後會自動同步 Notion；不需要再按同步按鈕。
-              </div>
             </div>
           </div>
-          <div id="status" class="status">尚未同步</div>
-          <button id="addExpenseJump" class="btn gray">新增記帳</button>
+          <div
+            id="status"
+            class="status"
+            title="同步狀態"
+            aria-label="同步狀態"
+          >
+            •
+          </div>
         </div>
         <nav id="itineraryNav" class="tabs hidden">
           <button class="tab active" data-itinerary-tab="schedule">
@@ -38,14 +41,10 @@
         <section id="overview" class="section">
           <div class="panel">
             <h2>總覽</h2>
-            <div class="muted">
-              航班、住宿與所有旅行路線都來自 Notion「行程規劃」資料庫。
-            </div>
-            <div
-              id="overviewGrid"
-              class="overview-grid"
-              style="margin-top: 14px"
-            ></div>
+            <button id="addExpenseJump" class="btn soft-action" type="button">
+              記帳
+            </button>
+            <div id="overviewGrid" class="overview-grid"></div>
           </div>
         </section>
         <section id="spots" class="section active">
@@ -53,9 +52,6 @@
             <div class="row space">
               <div>
                 <h2>景點小卡</h2>
-                <div class="muted">
-                  內容來自 Notion；請在 Notion 建立或編輯景點。
-                </div>
               </div>
             </div>
             <div id="spotFilters" class="tabs" style="margin: 14px 0 0">
@@ -77,9 +73,6 @@
             <div class="row space">
               <div>
                 <h2>行事曆</h2>
-                <div class="muted">
-                  拖曳景點小卡到新的時間格，放開後會自動更新 Notion。
-                </div>
               </div>
               <div class="row">
                 <button id="prevDay" class="btn gray" type="button">
@@ -102,9 +95,6 @@
             <div class="row space">
               <div>
                 <h2>記帳</h2>
-                <div class="muted">
-                  新增後會直接寫入 Notion，記帳時間由 Notion 自動記錄。
-                </div>
               </div>
               <div class="row">
                 <button id="exportCsv" class="btn gray">匯出 CSV</button
@@ -113,31 +103,26 @@
             </div>
             <form id="expenseForm" class="form" style="margin-top: 14px">
               <div class="field full">
-                <label
-                  >項目<input
-                    id="expenseName"
-                    required
-                    placeholder="例如：租車費、咖啡、門票"
-                /></label>
+                <label>項目<input id="expenseName" required /></label>
               </div>
               <div class="field full">
                 <label>幣別</label>
                 <div class="currency-buttons">
                   <button
-                    class="currency-button active"
+                    class="currency-button"
                     type="button"
                     data-currency="TWD"
                   >
-                    NTD</button
+                    TWD</button
                   ><button
-                    class="currency-button"
+                    class="currency-button active"
                     type="button"
                     data-currency="ISK"
                   >
                     ISK
                   </button>
                 </div>
-                <input id="expenseCurrency" type="hidden" value="TWD" />
+                <input id="expenseCurrency" type="hidden" value="ISK" />
               </div>
               <div class="field">
                 <label
@@ -147,11 +132,7 @@
                     min="0"
                     step="0.01"
                     required /></label
-                ><input id="expenseTwd" type="hidden" /><span
-                  id="exchangeHint"
-                  class="small muted"
-                  >NTD 會直接記錄；ISK 會自動換算台幣。</span
-                >
+                ><input id="expenseTwd" type="hidden" />
               </div>
               <div class="field">
                 <label
@@ -172,7 +153,9 @@
               </div>
             </form>
           </div>
-          <div class="panel">
+          <div class="panel expense-view-panel">
+            <div id="expenseDateFilters" class="expense-filters"></div>
+            <div id="expenseSummary" class="expense-summary">NT$ 0</div>
             <div class="table-wrap">
               <table class="table">
                 <thead>
@@ -182,13 +165,12 @@
                     <th>原幣別</th>
                     <th>原始金額</th>
                     <th>台幣估算</th>
-                    <th>付款方式</th>
                     <th>記帳時間</th>
                   </tr>
                 </thead>
                 <tbody id="expenseList">
                   <tr>
-                    <td colspan="7" class="muted">尚未同步</td>
+                    <td colspan="6" class="muted">尚未同步</td>
                   </tr>
                 </tbody>
               </table>
@@ -200,7 +182,7 @@
             <div class="row space">
               <div>
                 <h2>D1 行程</h2>
-                <div id="day1Label" class="muted">等待同步資料</div>
+                <div id="day1Label" class="day-label" aria-hidden="true"></div>
               </div>
             </div>
             <div id="day1Weather" class="weather hidden"></div>
@@ -213,7 +195,7 @@
             <div class="row space">
               <div>
                 <h2>D2 行程</h2>
-                <div id="day2Label" class="muted">等待同步資料</div>
+                <div id="day2Label" class="day-label" aria-hidden="true"></div>
               </div>
             </div>
             <div id="day2Weather" class="weather hidden"></div>
@@ -226,7 +208,7 @@
             <div class="row space">
               <div>
                 <h2>D3 行程</h2>
-                <div id="day3Label" class="muted">等待同步資料</div>
+                <div id="day3Label" class="day-label" aria-hidden="true"></div>
               </div>
             </div>
             <div id="day3Weather" class="weather hidden"></div>
@@ -239,7 +221,7 @@
             <div class="row space">
               <div>
                 <h2>D4 行程</h2>
-                <div id="day4Label" class="muted">等待同步資料</div>
+                <div id="day4Label" class="day-label" aria-hidden="true"></div>
               </div>
             </div>
             <div id="day4Weather" class="weather hidden"></div>
@@ -252,7 +234,7 @@
             <div class="row space">
               <div>
                 <h2>D5 行程</h2>
-                <div id="day5Label" class="muted">等待同步資料</div>
+                <div id="day5Label" class="day-label" aria-hidden="true"></div>
               </div>
             </div>
             <div id="day5Weather" class="weather hidden"></div>
@@ -265,7 +247,7 @@
             <div class="row space">
               <div>
                 <h2>D6 行程</h2>
-                <div id="day6Label" class="muted">等待同步資料</div>
+                <div id="day6Label" class="day-label" aria-hidden="true"></div>
               </div>
             </div>
             <div id="day6Weather" class="weather hidden"></div>
@@ -278,7 +260,7 @@
             <div class="row space">
               <div>
                 <h2>D7 行程</h2>
-                <div id="day7Label" class="muted">等待同步資料</div>
+                <div id="day7Label" class="day-label" aria-hidden="true"></div>
               </div>
             </div>
             <div id="day7Weather" class="weather hidden"></div>
@@ -291,7 +273,7 @@
             <div class="row space">
               <div>
                 <h2>D8 行程</h2>
-                <div id="day8Label" class="muted">等待同步資料</div>
+                <div id="day8Label" class="day-label" aria-hidden="true"></div>
               </div>
             </div>
             <div id="day8Weather" class="weather hidden"></div>
@@ -304,7 +286,7 @@
             <div class="row space">
               <div>
                 <h2>D9 行程</h2>
-                <div id="day9Label" class="muted">等待同步資料</div>
+                <div id="day9Label" class="day-label" aria-hidden="true"></div>
               </div>
             </div>
             <div id="day9Weather" class="weather hidden"></div>
@@ -317,7 +299,7 @@
             <div class="row space">
               <div>
                 <h2>D10 行程</h2>
-                <div id="day10Label" class="muted">等待同步資料</div>
+                <div id="day10Label" class="day-label" aria-hidden="true"></div>
               </div>
             </div>
             <div id="day10Weather" class="weather hidden"></div>
@@ -328,10 +310,6 @@
         <section id="links" class="section">
           <div class="panel">
             <h2>特殊備用連結</h2>
-            <p class="muted">
-              目前先集中顯示 Notion
-              行程資料中的連結；之後可再補上保險、教堂、租車與緊急聯絡資訊。
-            </p>
             <div
               id="specialLinks"
               class="overview-list"

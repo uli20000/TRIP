@@ -2,7 +2,8 @@
 const C = window.ICELAND_APP_CONFIG || {};
 let travel = [],
   expenses = [],
-  activeSpotFilter = "全部";
+  activeSpotFilter = "全部",
+  activeExpenseDateFilter = "all";
 const $ = (id) => document.getElementById(id),
   esc = (v) =>
     String(v ?? "").replace(
@@ -17,9 +18,15 @@ const $ = (id) => document.getElementById(id),
         })[c],
     );
 const show = (id, on) => $(id).classList.toggle("hidden", !on);
-function status(t, error = false) {
-  $("status").textContent = t;
-  $("status").className = "status" + (error ? " error" : "");
+function status(message, error = false) {
+  const indicator = $("status");
+  if (!indicator) return;
+
+  const busy = /正在/.test(message) && !error;
+  indicator.textContent = error ? "!" : busy ? "…" : "✓";
+  indicator.className = `status ${error ? "error" : busy ? "busy" : "ready"}`;
+  indicator.title = message;
+  indicator.setAttribute("aria-label", message);
 }
 // ===== Notion 同步 API =====
 async function api(kind, method = "GET", body, params = {}) {
@@ -72,6 +79,15 @@ function datePlus(date, days) {
 }
 function firstTravelDate() {
   return travel.map(dayOf).filter(Boolean).sort()[0] || "";
+}
+function createdDateOf(record) {
+  return localInputValue(record.createdTime).slice(0, 10);
+}
+function dateText(value) {
+  return value ? value.replaceAll("-", "/") : "未分類";
+}
+function twdValue(record) {
+  return Number(p(record, "台幣估算") || 0);
 }
 function localInputValue(value) {
   const text = String(value || "");
@@ -314,7 +330,7 @@ function renderDailyPages() {
       weatherId = `day${i}Weather`;
     if (!target) continue;
     if (!first) {
-      label.textContent = "尚未有日期資料";
+      if (label) label.textContent = "";
       renderDayCards(target, []);
       renderTodoList(i);
       loadWeather([], "", weatherId);
@@ -324,7 +340,7 @@ function renderDailyPages() {
       rows = travel
         .filter((r) => dayOf(r) === date)
         .sort((a, b) => dateOf(a).localeCompare(dateOf(b)));
-    label.textContent = `${date} · ${rows.length} 筆行程`;
+    if (label) label.textContent = "";
     renderDayCards(target, rows);
     renderTodoList(i);
     loadWeather(rows, date, weatherId);
@@ -391,16 +407,55 @@ async function moveEvent(id, targetMinutes) {
   }
 }
 // ===== 記帳、匯率與匯出 =====
+function expenseRowsForFilter() {
+  const first = firstTravelDate();
+  if (activeExpenseDateFilter === "all") return expenses;
+  if (activeExpenseDateFilter === "before") {
+    return expenses.filter((r) => createdDateOf(r) < "2027-11-01");
+  }
+  if (activeExpenseDateFilter.startsWith("day-")) {
+    const day = Number(activeExpenseDateFilter.slice(4));
+    const date = first ? datePlus(first, day - 1) : "";
+    return expenses.filter((r) => createdDateOf(r) === date);
+  }
+  return expenses;
+}
+
+function expenseFilterButtons() {
+  const first = firstTravelDate();
+  const buttons = [
+    { id: "all", label: "全部日期" },
+    { id: "before", label: "2027/11 前" },
+    ...Array.from({ length: 10 }, (_, index) => ({
+      id: `day-${index + 1}`,
+      label: `D${index + 1}`,
+      date: first ? dateText(datePlus(first, index)) : "",
+    })),
+  ];
+
+  $("expenseDateFilters").innerHTML = buttons
+    .map(
+      (button) =>
+        `<button class="filter-button ${activeExpenseDateFilter === button.id ? "active" : ""}" type="button" data-expense-filter="${button.id}">${button.label}${button.date ? `<small>${button.date}</small>` : ""}</button>`,
+    )
+    .join("");
+}
+
 function renderExpenses() {
-  const b = $("expenseList");
-  b.innerHTML = expenses.length
-    ? expenses
+  expenseFilterButtons();
+  const rows = expenseRowsForFilter().sort((a, b) =>
+    String(b.createdTime || "").localeCompare(String(a.createdTime || "")),
+  );
+  const total = rows.reduce((sum, record) => sum + twdValue(record), 0);
+  $("expenseSummary").textContent = `NT$ ${total.toLocaleString("zh-TW")}`;
+  $("expenseList").innerHTML = rows.length
+    ? rows
         .map(
           (r) =>
-            `<tr><td>${esc(p(r, "Name"))}</td><td>${esc(p(r, "類別"))}</td><td>${esc(p(r, "原幣別"))}</td><td>${esc(p(r, "原始金額") ?? "")}</td><td>${esc(p(r, "台幣估算") ?? "")}</td><td>${esc(p(r, "付款方式"))}</td><td>${esc(p(r, "記帳時間") || "")}</td></tr>`,
+            `<tr><td>${esc(p(r, "Name"))}</td><td>${esc(p(r, "類別"))}</td><td>${esc(p(r, "原幣別"))}</td><td>${esc(p(r, "原始金額") ?? "")}</td><td>${esc(p(r, "台幣估算") ?? "")}</td><td>${esc(createdDateOf(r) ? `${dateText(createdDateOf(r))}` : "")}</td></tr>`,
         )
         .join("")
-    : '<tr><td colspan="7" class="muted">目前沒有費用資料。</td></tr>';
+    : '<tr><td colspan="6" class="muted">目前沒有費用</td></tr>';
 }
 async function syncTravel() {
   try {
@@ -434,7 +489,7 @@ async function syncAll() {
     status("正在自動同步資料…");
     await syncTravel();
     await syncExpenses();
-    status(`同步完成：${travel.length} 筆景點、${expenses.length} 筆費用`);
+    status("同步完成");
   } catch (e) {
     status(e.message, true);
   }
@@ -455,14 +510,13 @@ async function addExpense(e) {
       },
     });
     $("expenseForm").reset();
-    $("expenseCurrency").value = "TWD";
+    $("expenseCurrency").value = "ISK";
     document
       .querySelectorAll("[data-currency]")
       .forEach((x) =>
-        x.classList.toggle("active", x.dataset.currency === "TWD"),
+        x.classList.toggle("active", x.dataset.currency === "ISK"),
       );
     $("expenseTwd").value = "";
-    $("exchangeHint").textContent = "NTD 會直接記錄；ISK 會自動換算台幣。";
     await syncExpenses();
     status("記帳已儲存");
   } catch (e) {
@@ -478,15 +532,14 @@ function download(name, text, type) {
 }
 function exportCsv() {
   const rows = [
-    ["項目", "類別", "原幣別", "原始金額", "台幣估算", "付款方式", "記帳時間"],
+    ["項目", "類別", "原幣別", "原始金額", "台幣估算", "記帳時間"],
     ...expenses.map((r) => [
       p(r, "Name"),
       p(r, "類別"),
       p(r, "原幣別"),
       p(r, "原始金額"),
       p(r, "台幣估算"),
-      p(r, "付款方式"),
-      p(r, "記帳時間") || "",
+      createdDateOf(r),
     ]),
   ];
   download(
@@ -506,12 +559,12 @@ function exportXls() {
   const rows = expenses
     .map(
       (r) =>
-        `<tr><td>${esc(p(r, "Name"))}</td><td>${esc(p(r, "類別"))}</td><td>${esc(p(r, "原幣別"))}</td><td>${esc(p(r, "原始金額"))}</td><td>${esc(p(r, "台幣估算"))}</td><td>${esc(p(r, "付款方式"))}</td><td>${esc(p(r, "記帳時間") || "")}</td></tr>`,
+        `<tr><td>${esc(p(r, "Name"))}</td><td>${esc(p(r, "類別"))}</td><td>${esc(p(r, "原幣別"))}</td><td>${esc(p(r, "原始金額"))}</td><td>${esc(p(r, "台幣估算"))}</td><td>${esc(createdDateOf(r))}</td></tr>`,
     )
     .join("");
   download(
     "冰島費用紀錄.xls",
-    '<meta charset="UTF-8"><table border="1"><tr><th>項目</th><th>類別</th><th>原幣別</th><th>原始金額</th><th>台幣估算</th><th>付款方式</th><th>記帳時間</th></tr>' +
+    '<meta charset="UTF-8"><table border="1"><tr><th>項目</th><th>類別</th><th>原幣別</th><th>原始金額</th><th>台幣估算</th><th>記帳時間</th></tr>' +
       rows +
       "</table>",
     "application/vnd.ms-excel;charset=utf-8",
@@ -523,26 +576,22 @@ async function convertToTwd() {
   const amount = Number($("expenseOriginal").value);
   if (!amount) {
     $("expenseTwd").value = "";
-    $("exchangeHint").textContent = "輸入原始金額後自動換算";
+
     return;
   }
   if (currency === "TWD") {
     $("expenseTwd").value = amount;
-    $("exchangeHint").textContent = "TWD 直接採用原始金額";
+
     return;
   }
   try {
-    $("exchangeHint").textContent = "正在取得最新匯率…";
     const j = await fetch(
       `https://api.frankfurter.app/latest?from=${currency}&to=TWD`,
     ).then((r) => r.json());
     const rate = Number(j.rates?.TWD);
     if (!rate) throw Error("找不到匯率");
     $("expenseTwd").value = Math.round(amount * rate);
-    $("exchangeHint").textContent =
-      `1 ${currency} ≈ ${rate.toFixed(4)} TWD；匯率來源：Frankfurter`;
   } catch (e) {
-    $("exchangeHint").textContent = "匯率取得失敗，請稍後再試";
     status("台幣換算失敗：" + e.message, true);
   }
 }
@@ -609,6 +658,12 @@ document.addEventListener("click", async (e) => {
   const card = e.target.closest("[data-spot-card]");
   if (card && !e.target.closest("a,button,input,select,textarea")) {
     openSpotModal(card.dataset.spotId);
+    return;
+  }
+  const expenseFilter = e.target.closest("[data-expense-filter]");
+  if (expenseFilter) {
+    activeExpenseDateFilter = expenseFilter.dataset.expenseFilter;
+    renderExpenses();
     return;
   }
   const main = e.target.closest("[data-main-tab]");

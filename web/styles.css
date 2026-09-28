@@ -510,3 +510,240 @@ h3 {
     font-size: 13px;
   }
 }
+
+/* ===== Nordic UI ===== */
+:root {
+  --blue: #496f7a;
+  --blue-dark: #2e4f58;
+  --soft: #e8f0ef;
+  --line: #d8e2e0;
+  --canvas: #f5f8f7;
+  --green: #477d68;
+  --red: #b45c59;
+}
+body {
+  color: #26373d;
+  background:
+    radial-gradient(circle at 10% 0%, #eaf1f0 0, transparent 28%), var(--canvas);
+}
+.wrap {
+  max-width: 1180px;
+  padding: 24px 20px 112px;
+}
+.panel {
+  position: relative;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow:
+    0 1px 2px #29434a0d,
+    0 8px 24px #29434a0a;
+}
+#appPanel > .panel:first-child {
+  padding: 28px 28px 22px;
+  text-align: center;
+  background: #fdfefe;
+}
+#appPanel > .panel:first-child .status {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  margin: 0;
+}
+h1,
+h2,
+h3 {
+  text-align: center;
+}
+h1 {
+  letter-spacing: 0.04em;
+}
+h2 {
+  color: var(--blue-dark);
+}
+.row.space {
+  justify-content: center;
+}
+.btn,
+.tab,
+.currency-button,
+.filter-button,
+.bottom-nav button {
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    transform 120ms ease;
+}
+.btn:hover,
+.tab:hover,
+.currency-button:hover,
+.filter-button:hover,
+.bottom-nav button:hover {
+  background: #dce9e7;
+  color: var(--blue-dark);
+}
+.btn:active,
+.tab:active,
+.currency-button:active,
+.filter-button:active,
+.bottom-nav button:active {
+  transform: translateY(1px) scale(0.98);
+  background: var(--blue-dark);
+  color: #fff;
+}
+.btn.gray,
+.btn.soft-action {
+  background: var(--soft);
+  color: var(--blue-dark);
+}
+.btn.soft-action {
+  display: block;
+  margin: 14px auto 20px;
+}
+.status {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  font-weight: 800;
+  background: #e8f1ec;
+  color: var(--green);
+}
+.status.busy {
+  background: #edf1f0;
+  color: var(--blue);
+}
+.status.error {
+  background: #fbe9e7;
+  color: var(--red);
+}
+.tabs {
+  justify-content: center;
+}
+.tab.active,
+.currency-button.active,
+.filter-button.active,
+.bottom-nav button.active {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+}
+.grid,
+.overview-grid {
+  text-align: center;
+}
+.card,
+.spot-card,
+.overview-item {
+  text-align: center;
+}
+.spot-card {
+  min-height: 142px;
+  display: grid;
+  place-items: center;
+}
+.spot-summary {
+  min-height: auto;
+  width: 100%;
+}
+.spot-summary h3 {
+  margin-bottom: 10px;
+}
+.spot-map {
+  margin-top: 14px;
+  text-align: center;
+}
+.form {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+.field label {
+  text-align: center;
+}
+.field input,
+.field select,
+.field textarea {
+  text-align: center;
+  background: #fbfdfc;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+#dateFilter:focus {
+  outline: 3px solid #dbe9e7;
+  border-color: var(--blue);
+}
+.currency-buttons {
+  max-width: 420px;
+  margin: auto;
+}
+.field.full > .btn {
+  width: min(420px, 100%);
+  margin: auto;
+}
+.expense-view-panel {
+  text-align: center;
+}
+.expense-filters {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.filter-button {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 8px;
+  background: #f1f6f5;
+  color: #587078;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.filter-button small {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+.expense-summary {
+  margin: 6px auto 18px;
+  color: var(--blue-dark);
+  font-size: 24px;
+  font-weight: 800;
+}
+.table th,
+.table td {
+  text-align: center;
+}
+.day-label {
+  display: none;
+}
+.modal-content {
+  text-align: left;
+}
+.weather {
+  text-align: center;
+}
+.todo-list {
+  text-align: center;
+}
+.todo-row {
+  justify-content: center;
+}
+@media (max-width: 750px) {
+  #appPanel > .panel:first-child {
+    padding: 22px 16px 18px;
+  }
+  .expense-filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .panel {
+    padding: 18px;
+  }
+}
