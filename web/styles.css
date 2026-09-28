@@ -1,4 +1,4 @@
-:root {\n/* upload-test */
+:root {
   font-family:
     -apple-system, BlinkMacSystemFont, "Noto Sans TC", "Microsoft JhengHei",
     "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
@@ -866,4 +866,214 @@ h2 {
 }
 #appPanel > .panel.hero-panel::after {
   display: none;
+}
+
+/* ===== Mobile controls and card hierarchy ===== */
+#spotFilters,
+#itineraryNav {
+  display: grid;
+  gap: 8px;
+  overflow: visible;
+}
+#spotFilters {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+#itineraryNav {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+#spotFilters .tab,
+#itineraryNav .tab {
+  min-width: 0;
+  padding: 10px 4px;
+  text-align: center;
+}
+.spot-actions,
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.spot-actions .tag,
+.spot-actions .spot-map {
+  margin: 0;
+}
+.modal-card {
+  position: relative;
+}
+.modal-header {
+  min-height: 48px;
+  padding-right: 82px;
+}
+.modal-header h2 {
+  margin: 0;
+  text-align: left;
+  line-height: 1.25;
+}
+.modal-header #closeSpotModal {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+.modal-actions {
+  flex-direction: row;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+.modal-actions .spot-map {
+  display: inline-block;
+}
+.calendar-event {
+  user-select: none;
+}
+.calendar-resize-handle {
+  position: absolute;
+  right: 8px;
+  bottom: 3px;
+  left: 8px;
+  height: 10px;
+  border-top: 2px solid #4f7780aa;
+  border-bottom: 2px solid #4f778055;
+  cursor: ns-resize;
+  touch-action: none;
+}
+.calendar-resize-handle::after {
+  display: block;
+  width: 28px;
+  height: 2px;
+  margin: 2px auto;
+  border-radius: 2px;
+  background: #4f7780aa;
+  content: "";
+}
+.expense-filters {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  overflow: visible;
+}
+.filter-button {
+  min-width: 0;
+  padding: 9px 4px;
+}
+@media (max-width: 750px) {
+  #spotFilters {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  #itineraryNav,
+  .expense-filters {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+  #spotFilters .tab,
+  #itineraryNav .tab,
+  .filter-button {
+    font-size: 13px;
+  }
+  .modal-card {
+    padding: 18px;
+  }
+}
+
+/* English title accent: handwritten without requiring an external font */
+.hero-kicker {
+  font-family: "Segoe Script", "Bradley Hand", "Apple Chancery", cursive;
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: none;
+}
+
+/* Final mobile rule: one clean horizontal row, never wrapped */
+#spotFilters,
+#itineraryNav,
+.expense-filters {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+#spotFilters::-webkit-scrollbar,
+#itineraryNav::-webkit-scrollbar,
+.expense-filters::-webkit-scrollbar {
+  display: none;
+}
+#spotFilters .tab,
+#itineraryNav .tab,
+.expense-filters .filter-button {
+  flex: 0 0 auto;
+  min-width: 64px;
+  white-space: nowrap;
+}
+.hero-kicker {
+  max-width: 100%;
+  padding: 0 52px;
+}
+@media (max-width: 750px) {
+  #spotFilters,
+  #itineraryNav,
+  .expense-filters {
+    justify-content: flex-start;
+  }
+  .hero-kicker {
+    padding: 0 46px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+}
+
+
+/* ===== Preview v2: Iceland journey home ===== */
+body {
+  background:
+    radial-gradient(circle at 8% 0%, #dcefed 0, transparent 28%),
+    radial-gradient(circle at 92% 16%, #e6eaf6 0, transparent 34%),
+    #f3f8f7;
+}
+.wrap { max-width: 1180px; padding: 24px 20px 112px; }
+.hero-panel {
+  padding: 28px 28px 24px !important;
+  border-radius: 25px !important;
+  min-height: 166px;
+}
+.hero-kicker { padding: 0 56px; }
+.hero-tags {
+  position: relative; z-index: 1;
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 8px;
+  margin-top: 18px;
+}
+.hero-tags span {
+  padding: 6px 10px; border: 1px solid #ffffff40; border-radius: 999px;
+  background: #ffffff18; color: #f5ffff; font-size: 12px;
+}
+#overview .panel:first-child { padding-top: 24px; }
+#overview .row.space { justify-content: space-between; align-items: center; }
+#addExpenseJump {
+  display: inline-flex; align-items: center; justify-content: center;
+  margin: 0; padding: 11px 15px; border-radius: 13px;
+  background: #c87551; color: #fff; box-shadow: 0 8px 18px #c8755130;
+}
+#addExpenseJump:hover, #addExpenseJump:active { background: #a85c42; color: #fff; }
+#overviewGrid .card { background: #fbfdfc; }
+#spotFilters, #itineraryNav, #expenseDateFilters {
+  display: flex; flex-wrap: nowrap; justify-content: flex-start;
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+}
+#spotFilters::-webkit-scrollbar, #itineraryNav::-webkit-scrollbar, #expenseDateFilters::-webkit-scrollbar { display: none; }
+#spotFilters .tab, #itineraryNav .tab, #expenseDateFilters .filter-button { flex: 0 0 auto; min-width: 64px; white-space: nowrap; }
+#itineraryNav { margin-top: 15px; }
+.bottom-nav { border-radius: 19px 19px 0 0; }
+@media (max-width: 750px) {
+  .wrap { padding: 14px 12px 104px; }
+  .hero-panel { padding: 23px 17px 19px !important; min-height: 155px; }
+  .hero-kicker { padding: 0 45px; font-size: 12px; white-space: nowrap; }
+  .hero-panel h1 { font-size: 27px; }
+  .hero-tags { gap: 6px; margin-top: 14px; }
+  .hero-tags span { font-size: 11px; padding: 5px 8px; }
+  #overview .row.space { align-items: stretch; flex-direction: column; }
+  #addExpenseJump { width: 100%; }
+  #spots .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  #spots .spot-card { min-height: 132px; padding: 13px 8px; }
+  #spots .spot-summary h3 { font-size: 14px; }
 }
