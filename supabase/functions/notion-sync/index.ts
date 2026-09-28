@@ -14,6 +14,7 @@ type NotionPage = {
   id: string;
   url?: string;
   last_edited_time?: string;
+  created_time?: string;
   icon?: {
     type?: string;
     emoji?: string;
@@ -139,6 +140,7 @@ function readPage(page: NotionPage, schema: SchemaProperty[], content = "") {
   return {
     id: page.id,
     url: page.url || `https://www.notion.so/${page.id.replaceAll("-", "")}`,
+    createdTime: page.created_time || null,
     lastEditedTime: page.last_edited_time || null,
     icon: page.icon || null,
     properties,
