@@ -106,25 +106,62 @@ function mapUrl(r) {
     : "#";
 }
 // ===== 景點小卡與詳細內容 =====
-function spotCard(r, showDate = true) {
-  return `<article class="card spot-card" data-spot-card data-spot-id="${esc(r.id)}"><div class="spot-summary"><h3>${esc(p(r, "Name") || "未命名景點")}</h3><span class="tag">${esc(p(r, "標籤") || "未分類")}</span><a class="spot-map" href="${esc(mapUrl(r))}" target="_blank" rel="noreferrer" onclick="event.stopPropagation()">開啟地標導航</a></div></article>`;
+function iconMarkup(record) {
+  const icon = record.icon;
+  if (!icon) return "";
+
+  if (icon.type === "emoji" && icon.emoji) {
+    return `<span class="spot-icon" aria-hidden="true">${esc(icon.emoji)}</span>`;
+  }
+
+  const imageUrl = icon.custom_emoji?.url || icon.external?.url;
+  if (imageUrl && /^https?:\/\//.test(imageUrl)) {
+    return `<img class="spot-icon-image" src="${esc(imageUrl)}" alt="" aria-hidden="true">`;
+  }
+
+  return "";
 }
+
+function spotCard(r, showDate = true) {
+  return `<article class="card spot-card" data-spot-card data-spot-id="${esc(r.id)}"><div class="spot-summary"><h3>${iconMarkup(r)}${esc(p(r, "Name") || "未命名景點")}</h3><span class="tag">${esc(p(r, "標籤") || "未分類")}</span><a class="spot-map" href="${esc(mapUrl(r))}" target="_blank" rel="noreferrer" onclick="event.stopPropagation()">開啟地標導航</a></div></article>`;
+}
+
+function inlineMarkup(value) {
+  return esc(value)
+    .replace(
+      /&lt;(b|strong)&gt;([\s\S]*?)&lt;\/(b|strong)&gt;/g,
+      "<strong>$2</strong>",
+    )
+    .replace(/&lt;(i|em)&gt;([\s\S]*?)&lt;\/(i|em)&gt;/g, "<em>$2</em>")
+    .replace(/&lt;u&gt;([\s\S]*?)&lt;\/u&gt;/g, "<u>$1</u>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/__([^_]+)__/g, "<strong>$1</strong>");
+}
+
 function markdownToHtml(text) {
-  const lines = esc(text || "Notion 尚未填寫詳細內容。").split("\n");
+  const lines = String(text || "Notion 尚未填寫詳細內容。").split(/\r?\n/);
+
   return lines
-    .map((line) => {
-      if (/^### /.test(line)) return `<h4>${line.slice(4)}</h4>`;
-      if (/^## /.test(line)) return `<h3>${line.slice(3)}</h3>`;
-      if (/^# /.test(line)) return `<h2>${line.slice(2)}</h2>`;
-      if (/^[-*] /.test(line)) return `<p>• ${line.slice(2)}</p>`;
-      return line ? `<p>${line}</p>` : "<br>";
+    .map((rawLine) => {
+      const line = inlineMarkup(rawLine);
+      const trimmed = line.trim();
+
+      if (/^### /.test(trimmed)) return `<h4>${trimmed.slice(4)}</h4>`;
+      if (/^## /.test(trimmed)) return `<h3>${trimmed.slice(3)}</h3>`;
+      if (/^# /.test(trimmed)) return `<h2>${trimmed.slice(2)}</h2>`;
+      if (/^<strong>.*<\/strong>$/.test(trimmed)) {
+        return `<h3>${trimmed.replace(/^<strong>|<\/strong>$/g, "")}</h3>`;
+      }
+      if (/^[-*] /.test(trimmed)) return `<p>• ${trimmed.slice(2)}</p>`;
+      return trimmed ? `<p>${trimmed}</p>` : "<br>";
     })
     .join("");
 }
 function openSpotModal(id) {
   const r = travel.find((x) => x.id === id);
   if (!r) return;
-  $("spotModalTitle").textContent = p(r, "Name") || "景點說明";
+  $("spotModalTitle").innerHTML =
+    `${iconMarkup(r)}${esc(p(r, "Name") || "景點說明")}`;
   $("spotModalMeta").textContent =
     `${p(r, "標籤") || "未分類"}${dateOf(r) ? ` · ${dayOf(r)} ${timeLabel(dateOf(r))}` : ""}`;
   $("spotModalBody").innerHTML = markdownToHtml(r.content);

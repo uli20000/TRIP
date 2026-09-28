@@ -1,7 +1,7 @@
 :root {
   font-family:
     -apple-system, BlinkMacSystemFont, "Noto Sans TC", "Microsoft JhengHei",
-    sans-serif;
+    "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
   color: #24323a;
   background: #f4f8f7;
   --blue: #2878aa;
@@ -39,6 +39,25 @@ h2 {
 }
 h3 {
   margin: 0 0 7px;
+}
+.spot-icon {
+  display: inline-block;
+  margin-right: 6px;
+  font-family:
+    "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  font-size: 1.05em;
+  vertical-align: -0.08em;
+}
+.spot-icon-image {
+  width: 1.15em;
+  height: 1.15em;
+  margin-right: 6px;
+  vertical-align: -0.18em;
+  object-fit: contain;
+}
+.modal-card h2 .spot-icon,
+.modal-card h2 .spot-icon-image {
+  font-size: 1em;
 }
 .muted {
   color: #6f7d81;
