@@ -1077,3 +1077,125 @@ body {
   #spots .spot-card { min-height: 132px; padding: 13px 8px; }
   #spots .spot-summary h3 { font-size: 14px; }
 }
+
+
+/* ===== Real overview: same visual language as the approved preview ===== */
+.overview-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+.overview-stat {
+  padding: 17px 18px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: #f7fbfa;
+  text-align: left;
+}
+.overview-stat span {
+  display: block;
+  color: #71888d;
+  font-size: 13px;
+}
+.overview-stat strong {
+  display: block;
+  margin-top: 7px;
+  color: var(--blue-dark);
+  font-size: 25px;
+}
+.overview-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  margin-top: 14px;
+}
+.overview-block {
+  min-height: 150px;
+  background: #fbfdfc;
+}
+.overview-block h3 {
+  margin-bottom: 12px;
+  color: var(--blue-dark);
+  font-size: 18px;
+}
+.overview-quick {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 19px;
+  background: #ffffffd9;
+}
+.overview-quick-head {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+.overview-quick-head span {
+  color: var(--blue);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+.overview-quick-head strong { color: var(--blue-dark); font-size: 20px; }
+.quick-days { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 3px; scrollbar-width: none; }
+.quick-days::-webkit-scrollbar { display: none; }
+.day-chip {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: #f1f6f5;
+  color: #58747a;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.day-chip:hover, .day-chip:active { background: var(--blue-dark); color: #fff; }
+@media (max-width: 750px) {
+  .overview-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .overview-stat { padding: 14px 12px; }
+  .overview-stat strong { font-size: 21px; }
+  .overview-grid { grid-template-columns: 1fr; }
+  .overview-quick { padding: 15px 12px; }
+}
+
+/* ===== Mobile typography safeguard ===== */
+html { -webkit-text-size-adjust: 100%; }
+body { line-height: 1.5; overflow-x: hidden; }
+.hero-kicker, .hero-route { overflow: hidden; text-overflow: ellipsis; }
+.hero-kicker { line-height: 1.35; }
+.hero-route { line-height: 1.4; }
+.overview-item, .overview-item strong, .overview-block, .card, .spot-card, .event-card, .weather {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.overview-item strong, .overview-block h3, .spot-card h3, .event-card strong {
+  line-height: 1.35;
+}
+@media (max-width: 750px) {
+  h1 { font-size: 25px; line-height: 1.25; }
+  h2 { font-size: 21px; line-height: 1.3; }
+  h3 { line-height: 1.35; }
+  .hero-kicker {
+    padding: 0 38px;
+    font-size: 11px;
+    letter-spacing: .045em;
+    white-space: nowrap;
+  }
+  .hero-panel h1 { font-size: 27px; line-height: 1.2; }
+  .hero-route {
+    max-width: 100%;
+    font-size: 9px;
+    letter-spacing: .08em;
+    white-space: nowrap;
+  }
+  .overview-stat strong { font-size: 19px; line-height: 1.25; }
+  .overview-block h3 { font-size: 17px; }
+  .overview-item { padding: 9px 8px; }
+  .overview-item strong { font-size: 14px; }
+  .spot-card h3 { font-size: 14px; }
+  .modal-header { padding-right: 74px; }
+  .modal-header h2 { font-size: 21px; }
+  .bottom-nav button { font-size: 12px; white-space: nowrap; }
+}
